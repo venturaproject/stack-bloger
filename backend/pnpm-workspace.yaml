@@ -1,0 +1,11 @@
+allowBuilds:
+  '@scarf/scarf': set this to true or false
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+
+# @nestjs/throttler 6.5.0 aún declara peer @nestjs/core/common ^11; funciona con 12.
+peerDependencyRules:
+  allowedVersions:
+    '@nestjs/throttler>@nestjs/common': '12'
+    '@nestjs/throttler>@nestjs/core': '12'

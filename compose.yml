@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - blog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-604800}
+      JWT_REFRESH_TTL_MINUTES: ${JWT_REFRESH_TTL_MINUTES:-20160}
+      FRONTEND_URL: http://localhost:${NGINX_PORT:-8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infrastructure/frontend/Dockerfile
+    environment:
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+      VITE_PUBLIC_API_URL: ${VITE_PUBLIC_API_URL}
+    depends_on:
+      - backend
+
+  nginx:
+    build:
+      context: ./infrastructure/nginx
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  blog_pgdata:

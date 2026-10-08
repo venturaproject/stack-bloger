@@ -1,0 +1,23 @@
+# Playwright artifacts
+playwright-report/
+playwright/.cache/
+test-results/
+blob-report/
+.playwright-mcp/
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated build output
+**/node_modules/
+**/.pnpm-store/
+**/dist/
+backend/public/build/
+backend/storage/
+backend/public/avatars/
+backend/public/uploads/
+backend/package-lock.json
+**/*.tsbuildinfo
+coverage/

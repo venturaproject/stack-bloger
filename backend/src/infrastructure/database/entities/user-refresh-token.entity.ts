@@ -1,0 +1,46 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { UserEntity } from '../../../domain/user/entities/user.entity';
+
+@Entity('user_refresh_tokens')
+export class UserRefreshTokenEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ name: 'user_id' })
+  userId: number;
+
+  @Column({ type: 'varchar', length: 64, unique: true })
+  token: string;
+
+  @Column({ name: 'expires_at', type: 'timestamp' })
+  expiresAt: Date;
+
+  @Column({ name: 'used_at', type: 'timestamp', nullable: true })
+  usedAt: Date | null;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => UserEntity, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: UserEntity;
+
+  isExpired(now = new Date()): boolean {
+    return this.expiresAt.getTime() <= now.getTime();
+  }
+
+  isUsed(): boolean {
+    return this.usedAt !== null;
+  }
+}

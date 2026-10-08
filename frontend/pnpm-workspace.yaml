@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@rolldown/plugin-transform-imports@0.1.2'

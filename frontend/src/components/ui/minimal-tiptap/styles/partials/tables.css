@@ -1,0 +1,67 @@
+@reference "../../../../../index.css";
+
+/* Tables */
+.minimal-tiptap-editor .ProseMirror table {
+  @apply w-full border-collapse my-4 overflow-hidden rounded-md;
+}
+
+.minimal-tiptap-editor .ProseMirror table td,
+.minimal-tiptap-editor .ProseMirror table th {
+  @apply border border-border px-3 py-2 align-top relative;
+  min-width: 1em;
+}
+
+.minimal-tiptap-editor .ProseMirror table th {
+  @apply bg-muted font-semibold text-left;
+}
+
+.minimal-tiptap-editor .ProseMirror table .selectedCell::after {
+  @apply absolute inset-0 bg-primary/10 pointer-events-none content-[''] z-[2];
+}
+
+.minimal-tiptap-editor .ProseMirror table .column-resize-handle {
+  @apply absolute top-0 right-[-2px] bottom-[-2px] w-1 bg-primary pointer-events-none z-20;
+}
+
+.minimal-tiptap-editor .ProseMirror .tableWrapper {
+  @apply overflow-x-auto my-4;
+}
+
+/* Task lists */
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-1;
+}
+
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2;
+}
+
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] li > label {
+  @apply flex items-center mt-1;
+}
+
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  @apply w-4 h-4 rounded cursor-pointer;
+}
+
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] li > div {
+  @apply flex-1;
+}
+
+/* YouTube embed */
+.minimal-tiptap-editor .ProseMirror .youtube-embed,
+.minimal-tiptap-editor .ProseMirror iframe {
+  @apply w-full rounded-md my-4 border border-border;
+  aspect-ratio: 16/9;
+}
+
+/* Highlight */
+.minimal-tiptap-editor .ProseMirror mark {
+  @apply bg-yellow-200 dark:bg-yellow-800 rounded px-0.5;
+}
+
+/* HTML5 Video */
+.minimal-tiptap-editor .ProseMirror video {
+  @apply w-full rounded-md my-4 border border-border;
+  max-height: 480px;
+}
