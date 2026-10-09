@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CategoryEntity } from '../../domain/post/entities/category.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
 import { CATEGORY_REPOSITORY } from '../../domain/post/repositories/category.repository.interface';
 import { CategoryRepository } from './category.repository';
 import { CategoryController, PublicCategoryController } from './category.controller';
@@ -10,7 +10,7 @@ import { DeleteCategoryUseCase } from '../../application/category/use-cases/dele
 import { GetCategoryListUseCase } from '../../application/category/use-cases/get-category-list.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CategoryEntity])],
+  imports: [TypeOrmModule.forFeature([CategoryOrmEntity])],
   controllers: [CategoryController, PublicCategoryController],
   providers: [
     CategoryRepository,

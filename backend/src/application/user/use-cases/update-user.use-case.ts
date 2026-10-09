@@ -4,7 +4,7 @@ import { IUserRepository, USER_REPOSITORY } from '../../../domain/user/repositor
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserEntity } from '../../../domain/user/entities/user.entity';
 import { UserNotFoundException } from '../../../domain/user/exceptions/user-not-found.exception';
-import { RoleEntity } from '../../../infrastructure/database/entities/role.entity';
+import { UserRoleAssignment } from '../../../domain/user/entities/user.entity';
 
 @Injectable()
 export class UpdateUserUseCase {
@@ -20,7 +20,7 @@ export class UpdateUserUseCase {
     const { roles, ...rest } = dto;
     const data: Partial<UserEntity> = { ...rest };
     if (roles) {
-      data.roles = roles.map((name) => ({ name } as RoleEntity));
+      data.roles = roles.map((name) => ({ name } as UserRoleAssignment));
     }
     if (dto.password) {
       data.password = await bcrypt.hash(dto.password, 10);

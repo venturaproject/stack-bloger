@@ -10,9 +10,10 @@ import { IPostRepository, POST_REPOSITORY } from '../../domain/post/repositories
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../domain/user/entities/user.entity';
-import { PostCommentEntity } from '../../domain/post/entities/post-comment.entity';
-import { PostReactionEntity, ReactionType } from '../../domain/post/entities/post-reaction.entity';
-import { PostBookmarkEntity } from '../../domain/post/entities/post-bookmark.entity';
+import { ReactionType } from '../../domain/post/entities/post-reaction.entity';
+import { PostCommentOrmEntity } from '../database/entities/post-comment.orm.entity';
+import { PostReactionOrmEntity } from '../database/entities/post-reaction.orm.entity';
+import { PostBookmarkOrmEntity } from '../database/entities/post-bookmark.orm.entity';
 import { normalizeAvatarUrl } from '../user/avatar-url';
 
 @Controller('api/v1/public/posts')
@@ -21,9 +22,9 @@ export class PublicPostController {
     private readonly getPostList: GetPostListUseCase,
     private readonly getPostBySlug: GetPostBySlugUseCase,
     @Inject(POST_REPOSITORY) private readonly postRepo: IPostRepository,
-    @InjectRepository(PostCommentEntity) private readonly commentRepo: Repository<PostCommentEntity>,
-    @InjectRepository(PostReactionEntity) private readonly reactionRepo: Repository<PostReactionEntity>,
-    @InjectRepository(PostBookmarkEntity) private readonly bookmarkRepo: Repository<PostBookmarkEntity>,
+    @InjectRepository(PostCommentOrmEntity) private readonly commentRepo: Repository<PostCommentOrmEntity>,
+    @InjectRepository(PostReactionOrmEntity) private readonly reactionRepo: Repository<PostReactionOrmEntity>,
+    @InjectRepository(PostBookmarkOrmEntity) private readonly bookmarkRepo: Repository<PostBookmarkOrmEntity>,
   ) {}
 
   @Get()

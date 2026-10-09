@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { PostEntity } from '../../domain/post/entities/post.entity';
-import { CategoryEntity } from '../../domain/post/entities/category.entity';
-import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { PostOrmEntity } from '../database/entities/post.orm.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
+import { PostMapper } from '../database/mappers/post.mapper';
 import {
   IPostRepository,
   PaginatedResult,
@@ -14,26 +16,28 @@ import {
 @Injectable()
 export class PostRepository implements IPostRepository {
   constructor(
-    @InjectRepository(PostEntity)
-    private readonly orm: Repository<PostEntity>,
-    @InjectRepository(CategoryEntity)
-    private readonly categoryOrm: Repository<CategoryEntity>,
-    @InjectRepository(TagEntity)
-    private readonly tagOrm: Repository<TagEntity>,
+    @InjectRepository(PostOrmEntity)
+    private readonly orm: Repository<PostOrmEntity>,
+    @InjectRepository(CategoryOrmEntity)
+    private readonly categoryOrm: Repository<CategoryOrmEntity>,
+    @InjectRepository(TagOrmEntity)
+    private readonly tagOrm: Repository<TagOrmEntity>,
   ) {}
 
-  findById(id: number): Promise<PostEntity | null> {
-    return this.orm.findOne({
+  async findById(id: number): Promise<PostEntity | null> {
+    const post = await this.orm.findOne({
       where: { id },
       relations: { author: true, categories: true, tags: true },
     });
+    return post ? PostMapper.toDomain(post) : null;
   }
 
-  findBySlug(slug: string): Promise<PostEntity | null> {
-    return this.orm.findOne({
+  async findBySlug(slug: string): Promise<PostEntity | null> {
+    const post = await this.orm.findOne({
       where: { slug },
       relations: { author: true, categories: true, tags: true },
     });
+    return post ? PostMapper.toDomain(post) : null;
   }
 
   async getPaginated(filters: PostFilters): Promise<PaginatedResult<PostEntity>> {
@@ -70,27 +74,28 @@ export class PostRepository implements IPostRepository {
 
     const orderBy = filters.order === 'popular' ? 'post.viewCount' : filters.status === 'published' ? 'post.publishedAt' : 'post.createdAt';
     const direction = filters.order === 'oldest' ? 'ASC' : 'DESC';
-    const data = await qb
+    const rows = await qb
       .orderBy(orderBy, direction)
       .skip((page - 1) * perPage)
       .take(perPage)
       .getMany();
 
-    return { data, total, page, perPage, lastPage: Math.ceil(total / perPage) };
+    return { data: rows.map(PostMapper.toDomain), total, page, perPage, lastPage: Math.ceil(total / perPage) };
   }
 
   async create(data: Partial<PostEntity>): Promise<PostEntity> {
-    const post = this.orm.create(data);
-    return this.orm.save(post);
+    const post = await this.orm.save(this.orm.create(PostMapper.toPersistence(data)));
+    return PostMapper.toDomain(post);
   }
 
   async update(post: PostEntity, data: Partial<PostEntity>): Promise<PostEntity> {
-    Object.assign(post, data);
-    return this.orm.save(post);
+    const entity = await this.orm.findOneByOrFail({ id: post.id });
+    Object.assign(entity, PostMapper.toPersistence(data));
+    return PostMapper.toDomain(await this.orm.save(entity));
   }
 
   async delete(post: PostEntity): Promise<void> {
-    await this.orm.remove(post);
+    await this.orm.delete(post.id);
   }
 
   async generateSlug(title: string): Promise<string> {
@@ -125,19 +130,23 @@ export class PostRepository implements IPostRepository {
   }
 
   async syncCategories(post: PostEntity, categoryIds: number[]): Promise<PostEntity> {
+    const entity = await this.orm.findOneByOrFail({ id: post.id });
     const categories = categoryIds.length > 0
       ? await this.categoryOrm.findBy({ id: In(categoryIds) })
       : [];
-    post.categories = categories;
-    return this.orm.save(post);
+    entity.categories = categories;
+    await this.orm.save(entity);
+    return (await this.findById(post.id)) as PostEntity;
   }
 
   async syncTags(post: PostEntity, tagIds: number[]): Promise<PostEntity> {
+    const entity = await this.orm.findOneByOrFail({ id: post.id });
     const tags = tagIds.length > 0
       ? await this.tagOrm.findBy({ id: In(tagIds) })
       : [];
-    post.tags = tags;
-    return this.orm.save(post);
+    entity.tags = tags;
+    await this.orm.save(entity);
+    return (await this.findById(post.id)) as PostEntity;
   }
 
   async findRelated(postId: number, categoryIds: number[], limit: number): Promise<PostEntity[]> {
@@ -153,14 +162,14 @@ export class PostRepository implements IPostRepository {
       qb.andWhere('category.id IN (:...categoryIds)', { categoryIds });
     }
 
-    return qb.orderBy('post.publishedAt', 'DESC').take(limit).getMany();
+    return (await qb.orderBy('post.publishedAt', 'DESC').take(limit).getMany()).map(PostMapper.toDomain);
   }
 
   async incrementViews(id: number): Promise<void> {
-    await this.orm.createQueryBuilder().update(PostEntity).set({ viewCount: () => '"viewCount" + 1' }).where('id = :id', { id }).execute();
+    await this.orm.createQueryBuilder().update(PostOrmEntity).set({ viewCount: () => '"viewCount" + 1' }).where('id = :id', { id }).execute();
   }
 
   async publishScheduled(): Promise<void> {
-    await this.orm.createQueryBuilder().update(PostEntity).set({ status: 'published' }).where('status = :status AND "publishedAt" <= NOW()', { status: 'scheduled' }).execute();
+    await this.orm.createQueryBuilder().update(PostOrmEntity).set({ status: 'published' }).where('status = :status AND "publishedAt" <= NOW()', { status: 'scheduled' }).execute();
   }
 }

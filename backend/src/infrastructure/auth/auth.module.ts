@@ -3,7 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../../domain/user/entities/user.entity';
+import { UserOrmEntity } from '../database/entities/user.orm.entity';
 import { USER_REPOSITORY } from '../../domain/user/repositories/user.repository.interface';
 import {
   USER_REFRESH_TOKEN_REPOSITORY,
@@ -36,7 +36,7 @@ import { PermissionEntity } from '../database/entities/permission.entity';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([UserEntity, RoleEntity, PermissionEntity, UserRefreshTokenEntity]),
+    TypeOrmModule.forFeature([UserOrmEntity, RoleEntity, PermissionEntity, UserRefreshTokenEntity]),
   ],
   controllers: [AuthController],
   providers: [

@@ -3,7 +3,7 @@ import {
   UpdateDateColumn, ManyToMany, JoinTable,
 } from 'typeorm';
 import type { RoleEntity } from './role.entity';
-import type { UserEntity } from '../../../domain/user/entities/user.entity';
+import type { UserOrmEntity } from './user.orm.entity';
 
 @Entity('permissions')
 export class PermissionEntity {
@@ -30,6 +30,6 @@ export class PermissionEntity {
   })
   roles: RoleEntity[];
 
-  @ManyToMany('UserEntity', (user: UserEntity) => user.permissionsRelation)
-  users: UserEntity[];
+  @ManyToMany('UserOrmEntity', (user: UserOrmEntity) => user.permissionsRelation)
+  users: UserOrmEntity[];
 }

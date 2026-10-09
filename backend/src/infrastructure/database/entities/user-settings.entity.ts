@@ -2,7 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,
   UpdateDateColumn, OneToOne, JoinColumn,
 } from 'typeorm';
-import type { UserEntity } from '../../../domain/user/entities/user.entity';
+import type { UserOrmEntity } from './user.orm.entity';
 
 @Entity('user_settings')
 export class UserSettingsEntity {
@@ -45,7 +45,7 @@ export class UserSettingsEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne('UserEntity', (u: UserEntity) => u.settings)
+  @OneToOne('UserOrmEntity', (u: UserOrmEntity) => u.settings)
   @JoinColumn({ name: 'user_id' })
-  user: UserEntity;
+  user: UserOrmEntity;
 }

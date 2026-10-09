@@ -4,9 +4,10 @@ import { Repository } from 'typeorm';
 import { Throttle } from '@nestjs/throttler';
 import { ApiClientGuard } from '../auth/guards/api-client.guard';
 import { ApiScopes } from '../auth/decorators/api-scopes.decorator';
-import { PostEntity } from '../../domain/post/entities/post.entity';
-import { CategoryEntity } from '../../domain/post/entities/category.entity';
-import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { PostOrmEntity } from '../database/entities/post.orm.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
+import { PostMapper } from '../database/mappers/post.mapper';
 import { PostFiltersDto } from '../../application/post/dto/post-filters.dto';
 import { PostResource } from '../post/resources/post.resource';
 
@@ -15,9 +16,9 @@ import { PostResource } from '../post/resources/post.resource';
 @Throttle({ long: { ttl: 60000, limit: 120 } })
 export class ApiResourcesController {
   constructor(
-    @InjectRepository(PostEntity) private readonly posts: Repository<PostEntity>,
-    @InjectRepository(CategoryEntity) private readonly categories: Repository<CategoryEntity>,
-    @InjectRepository(TagEntity) private readonly tags: Repository<TagEntity>,
+    @InjectRepository(PostOrmEntity) private readonly posts: Repository<PostOrmEntity>,
+    @InjectRepository(CategoryOrmEntity) private readonly categories: Repository<CategoryOrmEntity>,
+    @InjectRepository(TagOrmEntity) private readonly tags: Repository<TagOrmEntity>,
   ) {}
 
   @Get('posts')
@@ -35,7 +36,7 @@ export class ApiResourcesController {
     if (filters.tagSlug) qb.andWhere('tag.slug = :tagSlug', { tagSlug: filters.tagSlug });
     const orderColumn = filters.order === 'popular' ? 'post.viewCount' : 'post.publishedAt';
     const [items, total] = await qb.orderBy(orderColumn, filters.order === 'oldest' ? 'ASC' : 'DESC').skip((page - 1) * perPage).take(perPage).getManyAndCount();
-    return { data: PostResource.collection(items), meta: { total, page, perPage, lastPage: Math.ceil(total / perPage) } };
+    return { data: PostResource.collection(items.map(PostMapper.toDomain)), meta: { total, page, perPage, lastPage: Math.ceil(total / perPage) } };
   }
 
   @Get('categories')

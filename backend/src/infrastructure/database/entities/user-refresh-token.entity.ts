@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from '../../../domain/user/entities/user.entity';
+import { UserOrmEntity } from './user.orm.entity';
 
 @Entity('user_refresh_tokens')
 export class UserRefreshTokenEntity {
@@ -32,9 +32,9 @@ export class UserRefreshTokenEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => UserEntity, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserOrmEntity, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: UserEntity;
+  user: UserOrmEntity;
 
   isExpired(now = new Date()): boolean {
     return this.expiresAt.getTime() <= now.getTime();

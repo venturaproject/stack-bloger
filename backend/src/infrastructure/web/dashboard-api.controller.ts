@@ -2,20 +2,20 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PostEntity } from '../../domain/post/entities/post.entity';
-import { CategoryEntity } from '../../domain/post/entities/category.entity';
-import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { PostOrmEntity } from '../database/entities/post.orm.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
 
 @Controller('api/v1/dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardApiController {
   constructor(
-    @InjectRepository(PostEntity)
-    private readonly postRepository: Repository<PostEntity>,
-    @InjectRepository(CategoryEntity)
-    private readonly categoryRepository: Repository<CategoryEntity>,
-    @InjectRepository(TagEntity)
-    private readonly tagRepository: Repository<TagEntity>,
+    @InjectRepository(PostOrmEntity)
+    private readonly postRepository: Repository<PostOrmEntity>,
+    @InjectRepository(CategoryOrmEntity)
+    private readonly categoryRepository: Repository<CategoryOrmEntity>,
+    @InjectRepository(TagOrmEntity)
+    private readonly tagRepository: Repository<TagOrmEntity>,
   ) {}
 
   @Get()

@@ -2,39 +2,44 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
+import { TagMapper } from '../database/mappers/tag.mapper';
 import { ITagRepository } from '../../domain/post/repositories/tag.repository.interface';
 
 @Injectable()
 export class TagRepository implements ITagRepository {
   constructor(
-    @InjectRepository(TagEntity)
-    private readonly orm: Repository<TagEntity>,
+    @InjectRepository(TagOrmEntity)
+    private readonly orm: Repository<TagOrmEntity>,
   ) {}
 
-  findAll(): Promise<TagEntity[]> {
-    return this.orm.find({ order: { name: 'ASC' } });
+  async findAll(): Promise<TagEntity[]> {
+    return (await this.orm.find({ order: { name: 'ASC' } })).map(TagMapper.toDomain);
   }
 
-  findById(id: number): Promise<TagEntity | null> {
-    return this.orm.findOneBy({ id });
+  async findById(id: number): Promise<TagEntity | null> {
+    const tag = await this.orm.findOneBy({ id });
+    return tag ? TagMapper.toDomain(tag) : null;
   }
 
-  findBySlug(slug: string): Promise<TagEntity | null> {
-    return this.orm.findOneBy({ slug });
+  async findBySlug(slug: string): Promise<TagEntity | null> {
+    const tag = await this.orm.findOneBy({ slug });
+    return tag ? TagMapper.toDomain(tag) : null;
   }
 
   async create(data: Partial<TagEntity>): Promise<TagEntity> {
-    const tag = this.orm.create(data);
-    return this.orm.save(tag);
+    const tag = await this.orm.save(this.orm.create(data));
+    return TagMapper.toDomain(tag);
   }
 
   async update(tag: TagEntity, data: Partial<TagEntity>): Promise<TagEntity> {
-    Object.assign(tag, data);
-    return this.orm.save(tag);
+    const entity = await this.orm.findOneByOrFail({ id: tag.id });
+    Object.assign(entity, data);
+    return TagMapper.toDomain(await this.orm.save(entity));
   }
 
   async delete(tag: TagEntity): Promise<void> {
-    await this.orm.remove(tag);
+    await this.orm.delete(tag.id);
   }
 
   async generateSlug(name: string): Promise<string> {

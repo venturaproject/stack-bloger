@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../../domain/user/entities/user.entity';
+import { UserOrmEntity } from '../database/entities/user.orm.entity';
 import { USER_REPOSITORY } from '../../domain/user/repositories/user.repository.interface';
 import { UserRepository } from './user.repository';
 import { UserController } from './user.controller';
@@ -13,7 +13,7 @@ import { RoleEntity } from '../database/entities/role.entity';
 import { PermissionEntity } from '../database/entities/permission.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity, PermissionEntity])],
+  imports: [TypeOrmModule.forFeature([UserOrmEntity, RoleEntity, PermissionEntity])],
   controllers: [UserController],
   providers: [
     UserRepository,

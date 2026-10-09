@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostEntity } from '../../domain/post/entities/post.entity';
-import { CategoryEntity } from '../../domain/post/entities/category.entity';
-import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { PostOrmEntity } from '../database/entities/post.orm.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
 import { POST_REPOSITORY } from '../../domain/post/repositories/post.repository.interface';
 import { PostRepository } from './post.repository';
 import { PostController } from './post.controller';
@@ -14,12 +14,12 @@ import { GetPostListUseCase } from '../../application/post/use-cases/get-post-li
 import { GetPostByIdUseCase } from '../../application/post/use-cases/get-post-by-id.use-case';
 import { GetPostBySlugUseCase } from '../../application/post/use-cases/get-post-by-slug.use-case';
 import { PublishScheduledPostsService } from '../../application/post/services/publish-scheduled-posts.service';
-import { PostCommentEntity } from '../../domain/post/entities/post-comment.entity';
-import { PostReactionEntity } from '../../domain/post/entities/post-reaction.entity';
-import { PostBookmarkEntity } from '../../domain/post/entities/post-bookmark.entity';
+import { PostCommentOrmEntity } from '../database/entities/post-comment.orm.entity';
+import { PostReactionOrmEntity } from '../database/entities/post-reaction.orm.entity';
+import { PostBookmarkOrmEntity } from '../database/entities/post-bookmark.orm.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostEntity, CategoryEntity, TagEntity, PostCommentEntity, PostReactionEntity, PostBookmarkEntity])],
+  imports: [TypeOrmModule.forFeature([PostOrmEntity, CategoryOrmEntity, TagOrmEntity, PostCommentOrmEntity, PostReactionOrmEntity, PostBookmarkOrmEntity])],
   controllers: [PostController, PublicPostController, RssFeedController, SitemapController],
   providers: [
     PostRepository,

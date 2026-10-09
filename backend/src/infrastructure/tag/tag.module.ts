@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TagEntity } from '../../domain/post/entities/tag.entity';
+import { TagOrmEntity } from '../database/entities/tag.orm.entity';
 import { TAG_REPOSITORY } from '../../domain/post/repositories/tag.repository.interface';
 import { TagRepository } from './tag.repository';
 import { TagController, PublicTagController } from './tag.controller';
@@ -10,7 +10,7 @@ import { DeleteTagUseCase } from '../../application/tag/use-cases/delete-tag.use
 import { GetTagListUseCase } from '../../application/tag/use-cases/get-tag-list.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TagEntity])],
+  imports: [TypeOrmModule.forFeature([TagOrmEntity])],
   controllers: [TagController, PublicTagController],
   providers: [
     TagRepository,

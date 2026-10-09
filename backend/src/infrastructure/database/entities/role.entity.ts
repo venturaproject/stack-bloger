@@ -3,7 +3,7 @@ import {
   UpdateDateColumn, ManyToMany,
 } from 'typeorm';
 import { PermissionEntity } from './permission.entity';
-import { UserEntity } from '../../../domain/user/entities/user.entity';
+import { UserOrmEntity } from './user.orm.entity';
 
 @Entity('roles')
 export class RoleEntity {
@@ -25,6 +25,6 @@ export class RoleEntity {
   @ManyToMany(() => PermissionEntity, (p) => p.roles)
   permissions: PermissionEntity[];
 
-  @ManyToMany(() => UserEntity, (u) => u.roles)
-  users: UserEntity[];
+  @ManyToMany(() => UserOrmEntity, (u) => u.roles)
+  users: UserOrmEntity[];
 }

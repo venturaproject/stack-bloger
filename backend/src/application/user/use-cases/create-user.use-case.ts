@@ -4,7 +4,7 @@ import { IUserRepository, USER_REPOSITORY } from '../../../domain/user/repositor
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UserEntity } from '../../../domain/user/entities/user.entity';
 import { Email } from '../../../domain/user/value-objects/email.vo';
-import { RoleEntity } from '../../../infrastructure/database/entities/role.entity';
+import { UserRoleAssignment } from '../../../domain/user/entities/user.entity';
 
 @Injectable()
 export class CreateUserUseCase {
@@ -24,7 +24,7 @@ export class CreateUserUseCase {
       username,
       password: hashedPassword,
       status: dto.status ?? 'active',
-      roles: (dto.roles ?? ['viewer']).map((name) => ({ name } as RoleEntity)),
+      roles: (dto.roles ?? ['viewer']).map((name) => ({ name } as UserRoleAssignment)),
     });
   }
 }

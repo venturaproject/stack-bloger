@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../domain/user/entities/user.entity';
+import { UserOrmEntity } from '../database/entities/user.orm.entity';
+import { UserMapper } from '../database/mappers/user.mapper';
 import {
   IUserRepository,
   PaginatedResult,
@@ -14,33 +16,36 @@ import { PermissionEntity } from '../database/entities/permission.entity';
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly orm: Repository<UserEntity>,
+    @InjectRepository(UserOrmEntity)
+    private readonly orm: Repository<UserOrmEntity>,
     @InjectRepository(RoleEntity)
     private readonly roleOrm: Repository<RoleEntity>,
     @InjectRepository(PermissionEntity)
     private readonly permissionOrm: Repository<PermissionEntity>,
   ) {}
 
-  findById(id: number): Promise<UserEntity | null> {
-    return this.orm.findOne({
+  async findById(id: number): Promise<UserEntity | null> {
+    const user = await this.orm.findOne({
       where: { id },
       relations: { roles: { permissions: true }, settings: true, permissionsRelation: true },
     });
+    return user ? UserMapper.toDomain(user) : null;
   }
 
-  findByEmail(email: string): Promise<UserEntity | null> {
-    return this.orm.findOne({
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const user = await this.orm.findOne({
       where: { email: email.toLowerCase() },
       relations: { roles: { permissions: true }, settings: true, permissionsRelation: true },
     });
+    return user ? UserMapper.toDomain(user) : null;
   }
 
-  findByUsername(username: string): Promise<UserEntity | null> {
-    return this.orm.findOne({
+  async findByUsername(username: string): Promise<UserEntity | null> {
+    const user = await this.orm.findOne({
       where: { username },
       relations: { roles: { permissions: true }, settings: true, permissionsRelation: true },
     });
+    return user ? UserMapper.toDomain(user) : null;
   }
 
   async getPaginated(filters: UserFilters): Promise<PaginatedResult<UserEntity>> {
@@ -72,14 +77,14 @@ export class UserRepository implements IUserRepository {
 
     const total = await qb.getCount();
 
-    const data = await qb
+    const rows = await qb
       .orderBy('user.name', 'ASC')
       .skip((page - 1) * perPage)
       .take(perPage)
       .getMany();
 
     return {
-      data,
+      data: rows.map(UserMapper.toDomain),
       total,
       page,
       perPage,
@@ -88,17 +93,23 @@ export class UserRepository implements IUserRepository {
   }
 
   async create(data: Partial<UserEntity>): Promise<UserEntity> {
-    const user = this.orm.create(await this.prepareData(data));
-    return this.orm.save(user);
+    const user = await this.orm.save(this.orm.create(await this.prepareData(data)));
+    return (await this.findById(user.id)) as UserEntity;
   }
 
   async update(user: UserEntity, data: Partial<UserEntity>): Promise<UserEntity> {
-    Object.assign(user, await this.prepareData(data));
-    return this.orm.save(user);
+    const entity = await this.orm.findOne({
+      where: { id: user.id },
+      relations: { roles: { permissions: true }, settings: true, permissionsRelation: true },
+    });
+    if (!entity) return user;
+    Object.assign(entity, await this.prepareData(data));
+    await this.orm.save(entity);
+    return (await this.findById(entity.id)) as UserEntity;
   }
 
   async delete(user: UserEntity): Promise<void> {
-    await this.orm.remove(user);
+    await this.orm.delete(user.id);
   }
 
   async generateUsername(name: string): Promise<string> {
@@ -139,23 +150,26 @@ export class UserRepository implements IUserRepository {
     const permissionEntities = permissions.length > 0
       ? await this.permissionOrm.findBy(permissions.map((name) => ({ name })))
       : [];
-
-    user.permissionsRelation = permissionEntities;
-    return this.orm.save(user);
+    const entity = await this.orm.findOne({ where: { id: user.id }, relations: { roles: { permissions: true }, settings: true, permissionsRelation: true } });
+    if (!entity) return user;
+    entity.permissionsRelation = permissionEntities;
+    await this.orm.save(entity);
+    return (await this.findById(user.id)) as UserEntity;
   }
 
-  private async prepareData(data: Partial<UserEntity>): Promise<Partial<UserEntity>> {
-    const prepared: Partial<UserEntity> = { ...data };
+  private async prepareData(data: Partial<UserEntity>): Promise<Partial<UserOrmEntity>> {
+    const { roles, permissionsRelation, settings: _settings, ...scalarData } = data;
+    const prepared: Partial<UserOrmEntity> = { ...scalarData };
 
-    if (data.roles) {
-      const roleNames = data.roles.map((role) => role.name);
+    if (roles) {
+      const roleNames = roles.map((role) => role.name);
       prepared.roles = roleNames.length > 0
         ? await this.roleOrm.findBy(roleNames.map((name) => ({ name })))
         : [];
     }
 
-    if (data.permissionsRelation) {
-      const permissionNames = data.permissionsRelation.map((permission) => permission.name);
+    if (permissionsRelation) {
+      const permissionNames = permissionsRelation.map((permission) => permission.name);
       prepared.permissionsRelation = permissionNames.length > 0
         ? await this.permissionOrm.findBy(permissionNames.map((name) => ({ name })))
         : [];

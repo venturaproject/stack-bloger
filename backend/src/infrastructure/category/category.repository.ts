@@ -2,39 +2,44 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from '../../domain/post/entities/category.entity';
+import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
+import { CategoryMapper } from '../database/mappers/category.mapper';
 import { ICategoryRepository } from '../../domain/post/repositories/category.repository.interface';
 
 @Injectable()
 export class CategoryRepository implements ICategoryRepository {
   constructor(
-    @InjectRepository(CategoryEntity)
-    private readonly orm: Repository<CategoryEntity>,
+    @InjectRepository(CategoryOrmEntity)
+    private readonly orm: Repository<CategoryOrmEntity>,
   ) {}
 
-  findAll(): Promise<CategoryEntity[]> {
-    return this.orm.find({ order: { name: 'ASC' } });
+  async findAll(): Promise<CategoryEntity[]> {
+    return (await this.orm.find({ order: { name: 'ASC' } })).map(CategoryMapper.toDomain);
   }
 
-  findById(id: number): Promise<CategoryEntity | null> {
-    return this.orm.findOneBy({ id });
+  async findById(id: number): Promise<CategoryEntity | null> {
+    const category = await this.orm.findOneBy({ id });
+    return category ? CategoryMapper.toDomain(category) : null;
   }
 
-  findBySlug(slug: string): Promise<CategoryEntity | null> {
-    return this.orm.findOneBy({ slug });
+  async findBySlug(slug: string): Promise<CategoryEntity | null> {
+    const category = await this.orm.findOneBy({ slug });
+    return category ? CategoryMapper.toDomain(category) : null;
   }
 
   async create(data: Partial<CategoryEntity>): Promise<CategoryEntity> {
-    const category = this.orm.create(data);
-    return this.orm.save(category);
+    const category = await this.orm.save(this.orm.create(data));
+    return CategoryMapper.toDomain(category);
   }
 
   async update(category: CategoryEntity, data: Partial<CategoryEntity>): Promise<CategoryEntity> {
-    Object.assign(category, data);
-    return this.orm.save(category);
+    const entity = await this.orm.findOneByOrFail({ id: category.id });
+    Object.assign(entity, data);
+    return CategoryMapper.toDomain(await this.orm.save(entity));
   }
 
   async delete(category: CategoryEntity): Promise<void> {
-    await this.orm.remove(category);
+    await this.orm.delete(category.id);
   }
 
   async generateSlug(name: string): Promise<string> {
