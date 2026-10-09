@@ -1,2 +1,9 @@
 minimumReleaseAgeExclude:
   - '@rolldown/plugin-transform-imports@0.1.2'
+
+overrides:
+  react-router: 7.18.4
+  browserslist: 4.28.7
+  baseline-browser-mapping: 2.11.0
+  prosemirror-model: 1.25.12
+  prosemirror-view: 1.42.6

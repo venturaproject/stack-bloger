@@ -13,7 +13,7 @@
     "lint": "oxlint src",
     "lint:fix": "oxlint src --fix",
     "tsc": "tsc --noEmit -p tsconfig.json",
-    "test": "node --require ts-node/register --test src/application/post/use-cases/post-scheduling.spec.ts"
+    "test": "node --require ts-node/register --test src/application/post/use-cases/post-scheduling.spec.ts src/application/user/use-cases/refresh-token.use-case.spec.ts src/infrastructure/auth/auth.integration.spec.ts src/infrastructure/auth/guards/api-client.guard.spec.ts src/infrastructure/throttling/redis-throttler.storage.spec.ts src/shared/security/request-origin.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.2",
@@ -35,6 +35,7 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.13.0",
     "proxy-addr": "^2.0.8",
+    "redis": "^6.3.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "typeorm": "^1.1.1"
@@ -42,13 +43,16 @@
   "devDependencies": {
     "@nestjs/cli": "^12.0.8",
     "@nestjs/schematics": "^12.0.6",
+    "@nestjs/testing": "^12.1.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/multer": "^2.1.0",
     "@types/node": "^22.9.0",
     "@types/passport-jwt": "^4.0.1",
+    "@types/supertest": "^7.2.1",
     "oxlint": "^1.75.0",
+    "supertest": "^7.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }

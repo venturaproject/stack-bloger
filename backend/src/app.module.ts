@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -11,14 +12,20 @@ import { PostModule } from './infrastructure/post/post.module';
 import { CategoryModule } from './infrastructure/category/category.module';
 import { TagModule } from './infrastructure/tag/tag.module';
 import { UploadModule } from './infrastructure/upload/upload.module';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { RedisThrottlerStorage } from './infrastructure/throttling/redis-throttler.storage';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot([
-      { name: 'short', ttl: 60000,  limit: 10 },  // 10 req/min (login, upload)
-      { name: 'long',  ttl: 60000,  limit: 100 }, // 100 req/min (general API)
-    ]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        throttlers: [{ name: 'long', ttl: 60000, limit: 100 }],
+        storage: await RedisThrottlerStorage.connect(config.get('REDIS_URL', 'redis://localhost:6379')),
+      }),
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -44,7 +51,10 @@ import { UploadModule } from './infrastructure/upload/upload.module';
     TagModule,
     UploadModule,
   ],
-  providers: [WebAuthMiddleware],
+  providers: [
+    WebAuthMiddleware,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

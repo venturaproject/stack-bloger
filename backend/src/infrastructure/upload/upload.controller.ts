@@ -34,7 +34,7 @@ function validateImageBytes(filepath: string): boolean {
 
 @Controller('api/v1/uploads')
 @UseGuards(JwtAuthGuard)
-@Throttle({ short: { ttl: 3600000, limit: 20 } })
+@Throttle({ long: { ttl: 3600000, limit: 20 } })
 export class UploadController {
   @Post('image')
   @UseInterceptors(

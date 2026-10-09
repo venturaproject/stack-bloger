@@ -21,10 +21,9 @@ export interface CreateApiClientResponse {
 }
 
 export const AVAILABLE_SCOPES = [
-  { value: 'dispositivos:read', label: 'Dispositivos (lectura)' },
-  { value: 'telefonos:read',    label: 'Teléfonos (lectura)' },
-  { value: 'trabajadores:read', label: 'Trabajadores (lectura)' },
-  { value: '*',                 label: 'Acceso completo (*)' },
+  { value: 'posts:read',        label: 'Artículos publicados (lectura)' },
+  { value: 'categories:read',   label: 'Categorías (lectura)' },
+  { value: 'tags:read',         label: 'Etiquetas (lectura)' },
 ]
 
 export const apiClientsApi = {
@@ -40,5 +39,14 @@ export const apiClientsApi = {
 
   async revoke(id: string): Promise<void> {
     await axios.delete(`/api/v1/api-clients/${id}`)
+  },
+
+  async issueToken(clientId: string, clientSecret: string) {
+    const payload = new URLSearchParams({ grant_type: 'client_credentials' })
+    const { data } = await axios.post('/api/v1/oauth/token', payload, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      auth: { username: clientId, password: clientSecret },
+    })
+    return data as { access_token: string; token_type: 'Bearer'; expires_in: number; scope: string }
   },
 }

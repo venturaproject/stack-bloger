@@ -1,9 +1,10 @@
-import { IsString, IsOptional, IsIn, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsNumber, Min, Max, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PostStatus } from '../../../domain/post/entities/post.entity';
 
 export class PostFiltersDto {
   @IsString()
+  @MaxLength(200)
   @IsOptional()
   search?: string;
 

@@ -2,7 +2,7 @@
         ps shell-backend shell-frontend shell-db \
         install-frontend tsc migration clean-volumes help
 
-DC      = docker compose -f compose.dev.yml
+DC      = docker compose -f compose.yml -f compose.dev.yml
 BACKEND = boilerplate-blog-backend-1
 
 help: ## Muestra esta ayuda

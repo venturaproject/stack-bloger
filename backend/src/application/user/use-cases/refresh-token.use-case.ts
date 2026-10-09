@@ -26,27 +26,24 @@ export class RefreshTokenUseCase {
     const hashedRefreshToken = createHash('sha256').update(rawRefreshToken).digest('hex');
     const refreshToken = await this.refreshTokenRepository.findByToken(hashedRefreshToken);
 
-    if (!refreshToken || refreshToken.isExpired()) {
+    if (!refreshToken) {
       throw new InvalidRefreshTokenException();
     }
-
-    if (refreshToken.isUsed()) {
-      await this.refreshTokenRepository.revokeAllForUser(refreshToken.userId);
-      throw new InvalidRefreshTokenException('Refresh token already used. All sessions revoked.');
-    }
-
-    await this.refreshTokenRepository.markAsUsed(refreshToken);
 
     const nextRawRefreshToken = randomBytes(32).toString('hex');
     const nextHashedRefreshToken = createHash('sha256').update(nextRawRefreshToken).digest('hex');
     const refreshTtlMinutes = Number(process.env.JWT_REFRESH_TTL_MINUTES ?? 60 * 24 * 14);
     const expiresIn = Number(process.env.JWT_EXPIRES_IN_SECONDS ?? 60 * 60);
 
-    await this.refreshTokenRepository.create(
-      refreshToken.userId,
+    const rotation = await this.refreshTokenRepository.rotate(
+      refreshToken.id,
       nextHashedRefreshToken,
       new Date(Date.now() + refreshTtlMinutes * 60 * 1000),
     );
+    if (rotation === 'reused') {
+      throw new InvalidRefreshTokenException('Refresh token already used. All sessions revoked.');
+    }
+    if (rotation !== 'rotated') throw new InvalidRefreshTokenException();
 
     return {
       accessToken: this.jwtService.sign({ sub: refreshToken.user.id }),

@@ -92,14 +92,10 @@ function CreateDialog({ open, onClose, onCreate, loading }: {
   const [scopes, setScopes] = useState<string[]>([])
 
   const toggleScope = (scope: string) => {
-    if (scope === '*') {
-      setScopes((prev) => (prev.includes('*') ? [] : ['*']))
-      return
-    }
     setScopes((prev) =>
       prev.includes(scope)
         ? prev.filter((s) => s !== scope)
-        : [...prev.filter((s) => s !== '*'), scope],
+        : [...prev, scope],
     )
   }
 
@@ -119,7 +115,7 @@ function CreateDialog({ open, onClose, onCreate, loading }: {
         <DialogHeader>
           <DialogTitle>Nuevo cliente API</DialogTitle>
           <DialogDescription>
-            Crea un cliente para acceder a la API externa con credenciales propias.
+              Crea credenciales para que un sistema externo solicite tokens Bearer temporales y acceda a recursos del blog según sus scopes.
           </DialogDescription>
         </DialogHeader>
 
@@ -219,7 +215,7 @@ export function ApiClientsTab() {
           <div>
             <CardTitle>Clientes de API externa</CardTitle>
             <CardDescription className='mt-1'>
-              Gestiona los clientes que acceden a la API externa mediante Bearer token
+              Gestiona las aplicaciones externas con acceso limitado a la API del blog
             </CardDescription>
           </div>
           <Button size='sm' onClick={() => setCreateOpen(true)}>

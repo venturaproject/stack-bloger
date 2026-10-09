@@ -18,6 +18,14 @@ import { USER_REPOSITORY } from '../../domain/user/repositories/user.repository.
 import { CreateUserUseCase } from '../../application/user/use-cases/create-user.use-case';
 import { UpdateUserUseCase } from '../../application/user/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.use-case';
+import { ApiClientEntity } from '../database/entities/api-client.entity';
+import { ApiClientsController, ApiClientTokenController } from './api-clients.controller';
+import { ApiResourcesController } from './api-resources.controller';
+import { ApiClientGuard } from '../auth/guards/api-client.guard';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { createHmac } from 'crypto';
+import { API_CLIENT_JWT_SERVICE } from '../../shared/security/api-client-jwt.constants';
 
 @Module({
   imports: [
@@ -30,6 +38,7 @@ import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.
       PostEntity,
       CategoryEntity,
       TagEntity,
+      ApiClientEntity,
     ]),
   ],
   controllers: [
@@ -39,6 +48,9 @@ import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.
     BrandingApiController,
     RolesApiController,
     PermissionsApiController,
+    ApiClientsController,
+    ApiClientTokenController,
+    ApiResourcesController,
   ],
   providers: [
     UserRepository,
@@ -46,6 +58,16 @@ import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.
     CreateUserUseCase,
     UpdateUserUseCase,
     DeleteUserUseCase,
+    ApiClientGuard,
+    {
+      provide: API_CLIENT_JWT_SERVICE,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('API_CLIENT_JWT_SECRET')
+          ?? createHmac('sha256', config.getOrThrow<string>('JWT_SECRET')).update('api-client-token-signing:v1').digest('hex');
+        return new JwtService({ secret, signOptions: { algorithm: 'HS256' } });
+      },
+    },
   ],
 })
 export class WebModule {}

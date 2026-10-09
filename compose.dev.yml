@@ -28,10 +28,12 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
+      API_CLIENT_JWT_SECRET: ${API_CLIENT_JWT_SECRET:-}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-604800}
       JWT_REFRESH_TTL_MINUTES: ${JWT_REFRESH_TTL_MINUTES:-20160}
       FRONTEND_URL: http://localhost:${NGINX_PORT:-8080}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       CI: "true"
     volumes:
       - ./backend:/app
@@ -39,11 +41,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
       dockerfile: ../infrastructure/frontend/Dockerfile
+      target: build
     command: sh -c "pnpm install && pnpm run dev -- --host"
     environment:
       VITE_BACKEND_URL: ${VITE_BACKEND_URL}
@@ -61,10 +66,14 @@ services:
       context: ./infrastructure/nginx
     ports:
       - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - frontend
       - backend
 
 volumes:
   blog_pgdata:
+    name: boilerplate-blog_blog_pgdata
   blog_frontend_modules:
+    name: boilerplate-blog_blog_frontend_modules

@@ -268,7 +268,7 @@ export default function BlogShow({ post, relatedPosts = [], comments = [], engag
               ['unicorn', Sparkles, t('blog_reaction_unicorn')],
               ['lightbulb', Lightbulb, t('blog_reaction_lightbulb')],
             ] as const).map(([type, Icon, label]) => (
-              <Button key={type} type='button' variant='outline' size='sm' className='gap-1.5' disabled={authStatus !== 'authenticated'} title={authStatus === 'authenticated' ? label : t('blog_login_to_react')} onClick={() => void toggleReaction(type)}><Icon className='h-4 w-4' />{engagementState.reactionCounts[type]}</Button>
+              <Button key={type} type='button' variant='outline' size='sm' className='gap-1.5' aria-label={`${label}: ${engagementState.reactionCounts[type]}`} disabled={authStatus !== 'authenticated'} title={authStatus === 'authenticated' ? label : t('blog_login_to_react')} onClick={() => void toggleReaction(type)}><Icon className='h-4 w-4' />{engagementState.reactionCounts[type]}</Button>
             ))}
             <Button type='button' variant={bookmarked ? 'secondary' : 'outline'} size='sm' className='gap-1.5' disabled={authStatus !== 'authenticated'} title={authStatus === 'authenticated' ? t('blog_save_post') : t('blog_login_to_react')} onClick={() => void toggleBookmark()}><Bookmark className='h-4 w-4' />{t(bookmarked ? 'blog_saved_post' : 'blog_save_post')}</Button>
             <span className='ml-1 flex items-center gap-1 text-sm text-muted-foreground'><MessageCircle className='h-4 w-4' />{engagementState.commentCount}</span>

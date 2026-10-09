@@ -12,7 +12,7 @@ import { GetCurrentUserProfileUseCase } from '../../application/user/use-cases/g
 import { UserEntity } from '../../domain/user/entities/user.entity';
 
 @Controller('api/v1/auth')
-@Throttle({ short: { ttl: 60000, limit: 5 } })
+@Throttle({ long: { ttl: 60000, limit: 5 } })
 export class AuthController {
   private readonly refreshTtlMs: number
 

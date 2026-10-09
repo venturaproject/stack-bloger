@@ -36,8 +36,8 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
-      message: exception.message,
-      error: exception.name,
+      message: status >= HttpStatus.INTERNAL_SERVER_ERROR ? 'Internal server error' : exception.message,
+      error: status >= HttpStatus.INTERNAL_SERVER_ERROR ? 'Internal Server Error' : exception.name,
     });
   }
 }
