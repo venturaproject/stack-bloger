@@ -1,4 +1,5 @@
 import { PostEntity } from '../../../domain/post/entities/post.entity';
+import { normalizeAvatarUrl } from '../../user/avatar-url';
 
 export class PostResource {
   id: number;
@@ -27,7 +28,7 @@ export class PostResource {
     this.publishedAt = post.publishedAt?.toISOString() ?? null;
     this.viewCount = post.viewCount;
     this.author = post.author
-      ? { id: post.author.id, name: post.author.name, avatar: post.author.avatar }
+      ? { id: post.author.id, name: post.author.name, avatar: normalizeAvatarUrl(post.author.settings?.avatar) }
       : null;
     this.categories = (post.categories ?? []).map((c) => ({
       id: c.id,

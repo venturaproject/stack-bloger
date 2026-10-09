@@ -7,8 +7,8 @@ import cookieParser from 'cookie-parser';
 import { Request, Response, NextFunction } from 'express';
 import { join } from 'path';
 import { AppModule } from './app.module';
-import { DomainExceptionFilter } from './shared/filters/domain-exception.filter';
-import { hasTrustedRequestOrigin } from './shared/security/request-origin';
+import { HttpExceptionFilter } from './infrastructure/http/http-exception.filter';
+import { hasTrustedRequestOrigin } from './infrastructure/auth/security/request-origin';
 
 const REQUIRED_ENV = ['JWT_SECRET', 'DB_PASSWORD', 'DB_DATABASE'];
 
@@ -72,7 +72,7 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, transform: true }),
   );
 
-  app.useGlobalFilters(new DomainExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   if (process.env.NODE_ENV !== 'production' || process.env.SWAGGER_ENABLED === 'true') {
     const swaggerConfig = new DocumentBuilder()

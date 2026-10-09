@@ -25,7 +25,7 @@ import { ApiClientGuard } from '../auth/guards/api-client.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'crypto';
-import { API_CLIENT_JWT_SERVICE } from '../../shared/security/api-client-jwt.constants';
+import { API_CLIENT_JWT_SERVICE } from '../auth/security/api-client-jwt.constants';
 
 @Module({
   imports: [

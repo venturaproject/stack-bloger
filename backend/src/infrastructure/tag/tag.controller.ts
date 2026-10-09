@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../../shared/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateTagUseCase } from '../../application/tag/use-cases/create-tag.use-case';
 import { UpdateTagUseCase } from '../../application/tag/use-cases/update-tag.use-case';
 import { DeleteTagUseCase } from '../../application/tag/use-cases/delete-tag.use-case';

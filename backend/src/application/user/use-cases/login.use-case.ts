@@ -71,7 +71,7 @@ export class LoginUseCase {
           email: user.email,
           roles: user.roleNames,
           permissions: user.permissions,
-          avatar: user.avatar,
+          avatar: user.settings?.avatar ?? null,
       },
     };
   }

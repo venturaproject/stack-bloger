@@ -8,11 +8,12 @@ import { PostFiltersDto } from '../../application/post/dto/post-filters.dto';
 import { PostResource } from './resources/post.resource';
 import { IPostRepository, POST_REPOSITORY } from '../../domain/post/repositories/post.repository.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../domain/user/entities/user.entity';
 import { PostCommentEntity } from '../../domain/post/entities/post-comment.entity';
 import { PostReactionEntity, ReactionType } from '../../domain/post/entities/post-reaction.entity';
 import { PostBookmarkEntity } from '../../domain/post/entities/post-bookmark.entity';
+import { normalizeAvatarUrl } from '../user/avatar-url';
 
 @Controller('api/v1/public/posts')
 export class PublicPostController {
@@ -67,7 +68,7 @@ export class PublicPostController {
   async comments(@Param('slug') slug: string) {
     const post = await this.getPostBySlug.execute(slug);
     const comments = await this.commentRepo.find({ where: { postId: post.id, status: 'approved' }, relations: { user: { settings: true } }, order: { createdAt: 'ASC' } });
-    return { data: comments.map((comment) => ({ id: comment.id, content: comment.content, createdAt: comment.createdAt.toISOString(), user: { id: comment.user.id, name: comment.user.name, avatar: comment.user.avatar } })) };
+    return { data: comments.map((comment) => ({ id: comment.id, content: comment.content, createdAt: comment.createdAt.toISOString(), user: { id: comment.user.id, name: comment.user.name, avatar: normalizeAvatarUrl(comment.user.settings?.avatar) } })) };
   }
 
   @Get(':slug/engagement')
@@ -87,7 +88,7 @@ export class PublicPostController {
     if (!content || content.length > 2000) throw new BadRequestException('Comment must be between 1 and 2000 characters');
     const post = await this.getPostBySlug.execute(slug);
     const comment = await this.commentRepo.save(this.commentRepo.create({ postId: post.id, userId: user.id, content, status: 'pending' }));
-    return { data: { id: comment.id, content: comment.content, status: comment.status, createdAt: comment.createdAt.toISOString(), user: { id: user.id, name: user.name, avatar: user.avatar } } };
+    return { data: { id: comment.id, content: comment.content, status: comment.status, createdAt: comment.createdAt.toISOString(), user: { id: user.id, name: user.name, avatar: normalizeAvatarUrl(user.settings?.avatar) } } };
   }
 
   @Post(':slug/reactions')

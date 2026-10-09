@@ -13,7 +13,7 @@ import { LogoutUseCase } from '../../application/user/use-cases/logout.use-case'
 import { GetCurrentUserProfileUseCase } from '../../application/user/use-cases/get-current-user-profile.use-case';
 import { ApiClientTokenController } from '../web/api-clients.controller';
 import { ApiClientEntity } from '../database/entities/api-client.entity';
-import { API_CLIENT_JWT_SERVICE } from '../../shared/security/api-client-jwt.constants';
+import { API_CLIENT_JWT_SERVICE } from './security/api-client-jwt.constants';
 
 test('login endpoint sets HttpOnly, Secure, SameSite cookies and never returns tokens in JSON', async () => {
   const originalNodeEnv = process.env.NODE_ENV;

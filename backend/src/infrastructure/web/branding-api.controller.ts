@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileS
 import { join } from 'path';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../../shared/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 const VARIANTS = ['fullLight', 'fullDark', 'compactLight', 'compactDark', 'favicon'] as const;
 type BrandingVariant = (typeof VARIANTS)[number];

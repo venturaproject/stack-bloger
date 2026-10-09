@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../../shared/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateUserUseCase } from '../../application/user/use-cases/create-user.use-case';
 import { UpdateUserUseCase } from '../../application/user/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from '../../application/user/use-cases/delete-user.use-case';

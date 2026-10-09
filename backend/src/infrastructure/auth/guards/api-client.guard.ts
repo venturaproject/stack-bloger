@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
 import { Repository } from 'typeorm';
 import { ApiClientEntity } from '../../database/entities/api-client.entity';
-import { API_SCOPES } from '../../../shared/decorators/api-scopes.decorator';
-import { API_CLIENT_JWT_AUDIENCE, API_CLIENT_JWT_ISSUER, API_CLIENT_JWT_SERVICE } from '../../../shared/security/api-client-jwt.constants';
+import { API_SCOPES } from '../decorators/api-scopes.decorator';
+import { API_CLIENT_JWT_AUDIENCE, API_CLIENT_JWT_ISSUER, API_CLIENT_JWT_SERVICE } from '../security/api-client-jwt.constants';
 
 type ApiClientRequest = Request & { apiClient?: { id: string; scopes: string[] } };
 

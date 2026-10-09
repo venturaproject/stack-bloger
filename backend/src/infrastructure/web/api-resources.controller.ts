@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Throttle } from '@nestjs/throttler';
 import { ApiClientGuard } from '../auth/guards/api-client.guard';
-import { ApiScopes } from '../../shared/decorators/api-scopes.decorator';
+import { ApiScopes } from '../auth/decorators/api-scopes.decorator';
 import { PostEntity } from '../../domain/post/entities/post.entity';
 import { CategoryEntity } from '../../domain/post/entities/category.entity';
 import { TagEntity } from '../../domain/post/entities/tag.entity';

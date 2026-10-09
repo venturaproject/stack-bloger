@@ -19,10 +19,10 @@ import { Repository } from 'typeorm';
 import { existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
 import { basename, join } from 'path';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../domain/user/entities/user.entity';
 import { UserSettingsEntity } from '../database/entities/user-settings.entity';
-import { buildProtectedAvatarUrl } from '../../shared/utils/avatar-url';
+import { buildProtectedAvatarUrl } from '../user/avatar-url';
 
 interface UploadedFileInfo {
   originalname: string;

@@ -14,7 +14,6 @@ import type { RoleEntity } from '../../../infrastructure/database/entities/role.
 import type { PermissionEntity } from '../../../infrastructure/database/entities/permission.entity';
 import type { UserSettingsEntity } from '../../../infrastructure/database/entities/user-settings.entity';
 import type { UserRefreshTokenEntity } from '../../../infrastructure/database/entities/user-refresh-token.entity';
-import { normalizeAvatarUrl } from '../../../shared/utils/avatar-url';
 
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 export type UserRole = 'admin' | 'editor' | 'viewer';
@@ -88,10 +87,6 @@ export class UserEntity {
     }
 
     return 'viewer';
-  }
-
-  get avatar(): string | null {
-    return normalizeAvatarUrl(this.settings?.avatar);
   }
 
   get permissions(): string[] {

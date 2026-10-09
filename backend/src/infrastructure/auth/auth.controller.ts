@@ -5,11 +5,12 @@ import { Throttle } from '@nestjs/throttler';
 import { LoginUseCase } from '../../application/user/use-cases/login.use-case';
 import { LoginDto } from '../../application/user/dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { RefreshTokenUseCase } from '../../application/user/use-cases/refresh-token.use-case';
 import { LogoutUseCase } from '../../application/user/use-cases/logout.use-case';
 import { GetCurrentUserProfileUseCase } from '../../application/user/use-cases/get-current-user-profile.use-case';
 import { UserEntity } from '../../domain/user/entities/user.entity';
+import { normalizeAvatarUrl } from '../user/avatar-url';
 
 @Controller('api/v1/auth')
 @Throttle({ long: { ttl: 60000, limit: 5 } })
@@ -37,7 +38,7 @@ export class AuthController {
     return {
       tokenType: result.tokenType,
       expiresIn:  result.expiresIn,
-      user:       result.user,
+      user:       { ...result.user, avatar: normalizeAvatarUrl(result.user.avatar) },
     };
   }
 
@@ -69,7 +70,8 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: UserEntity) {
-    return { data: this.getCurrentUserProfile.execute(user) };
+    const profile = this.getCurrentUserProfile.execute(user);
+    return { data: { ...profile, avatar: normalizeAvatarUrl(profile.avatar) } };
   }
 
   private setAuthCookies(res: Response, accessToken: string, refreshToken: string, expiresIn: number) {

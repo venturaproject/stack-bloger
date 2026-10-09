@@ -1,4 +1,5 @@
 import { UserEntity } from '../../../domain/user/entities/user.entity';
+import { normalizeAvatarUrl } from '../avatar-url';
 
 export class UserResource {
   id: string;
@@ -28,7 +29,7 @@ export class UserResource {
     this.role = user.role;
     this.roles = user.roleNames;
     this.role_names = user.roleNames;
-    this.avatar = user.avatar;
+    this.avatar = normalizeAvatarUrl(user.settings?.avatar);
     this.lastActivity = null;
     this.createdAt = user.createdAt.toISOString();
     this.updatedAt = user.updatedAt.toISOString();

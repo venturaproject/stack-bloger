@@ -11,7 +11,7 @@ export class GetCurrentUserProfileUseCase {
       username: user.username,
       roles: user.roleNames,
       permissions: user.permissions,
-      avatar: user.avatar,
+      avatar: user.settings?.avatar ?? null,
     };
   }
 }

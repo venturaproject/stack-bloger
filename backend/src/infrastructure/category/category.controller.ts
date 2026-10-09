@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../../shared/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateCategoryUseCase } from '../../application/category/use-cases/create-category.use-case';
 import { UpdateCategoryUseCase } from '../../application/category/use-cases/update-category.use-case';
 import { DeleteCategoryUseCase } from '../../application/category/use-cases/delete-category.use-case';

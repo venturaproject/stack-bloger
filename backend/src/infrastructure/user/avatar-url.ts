@@ -3,14 +3,9 @@ export function buildProtectedAvatarUrl(filename: string): string {
 }
 
 export function normalizeAvatarUrl(avatar: string | null | undefined): string | null {
-  if (!avatar) {
-    return null;
-  }
-
+  if (!avatar) return null;
   const legacyPrefix = '/avatars/';
-  if (avatar.startsWith(legacyPrefix)) {
-    return buildProtectedAvatarUrl(avatar.slice(legacyPrefix.length));
-  }
-
-  return avatar;
+  return avatar.startsWith(legacyPrefix)
+    ? buildProtectedAvatarUrl(avatar.slice(legacyPrefix.length))
+    : avatar;
 }

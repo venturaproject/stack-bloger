@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../domain/user/entities/user.entity';
 import { CreatePostUseCase } from '../../application/post/use-cases/create-post.use-case';
 import { UpdatePostUseCase } from '../../application/post/use-cases/update-post.use-case';
