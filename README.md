@@ -1,106 +1,106 @@
 # Bloger — Blog CMS
 
 <p align="center">
-  <img src="docs/stack.bloger.png" alt="Bloger — stack moderna para crear blogs y plataformas de contenido" width="100%" />
+  <img src="docs/stack.bloger.png" alt="Bloger — a modern stack for building blogs and content platforms" width="100%" />
 </p>
 
-CMS y blog público construido con React, NestJS y PostgreSQL. Incluye gestión editorial, publicación programada, comunidad con comentarios y reacciones, y una API externa de solo lectura con credenciales y permisos por scope.
+Bloger is a content management system and public blog built with React, NestJS, and PostgreSQL. It includes editorial workflows, scheduled publishing, comments and reactions, and a scoped external API.
 
-## Índice
+## Table of contents
 
-- [Características](#características)
-- [Stack tecnológico](#stack-tecnológico)
-- [Arquitectura](#arquitectura)
-- [Requisitos](#requisitos)
-- [Instalación con Docker](#instalación-con-docker)
-- [Configuración](#configuración)
-- [Desarrollo local sin Docker](#desarrollo-local-sin-docker)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Docker setup](#docker-setup)
+- [Configuration](#configuration)
+- [Local development without Docker](#local-development-without-docker)
 - [API](#api)
-- [Clientes API externos](#clientes-api-externos)
-- [Seguridad](#seguridad)
-- [Pruebas y calidad](#pruebas-y-calidad)
-- [Migraciones](#migraciones)
-- [Estructura del repositorio](#estructura-del-repositorio)
-- [Limitaciones conocidas](#limitaciones-conocidas)
+- [External API clients](#external-api-clients)
+- [Security](#security)
+- [Testing and code quality](#testing-and-code-quality)
+- [Database migrations](#database-migrations)
+- [Repository structure](#repository-structure)
+- [Known limitations](#known-limitations)
 
-## Características
+## Features
 
-### Blog y lectura pública
+### Public blog and reading experience
 
-- Listado paginado de artículos publicados con búsqueda full-text, orden por recientes/antiguos/populares y filtros por categoría y etiqueta en la API.
-- Vistas en tarjetas y horizontal; búsqueda con debounce, estado vacío accionable y atajo `⌘K` / `Ctrl+K`.
-- Página de artículo con metadatos Open Graph, JSON-LD, tiempo estimado de lectura, progreso de lectura y artículos relacionados.
-- RSS en `/feed.xml` y sitemap en `/sitemap.xml`.
-- Sanitización de contenido HTML al renderizar artículos.
+- Paginated published-article feed with full-text search, sorting by newest/oldest/popular, and category/tag filters in the API.
+- Card and horizontal layouts, debounced search, actionable empty state, and `⌘K` / `Ctrl+K` search shortcut.
+- Article pages with Open Graph metadata, JSON-LD, estimated reading time, reading progress, and related articles.
+- RSS feed at `/feed.xml` and sitemap at `/sitemap.xml`.
+- HTML sanitization when rendering article content.
 
-### Administración editorial
+### Editorial administration
 
-- Crear, editar, programar, publicar, archivar y eliminar artículos.
-- Gestión de categorías, etiquetas, usuarios, roles y permisos.
-- Subida de imágenes y selección de imagen destacada.
-- Autosalvado local de borradores en el formulario de creación.
-- Dashboard con publicaciones recientes y artículos más leídos.
+- Create, edit, schedule, publish, archive, and delete articles.
+- Manage categories, tags, users, roles, and permissions.
+- Upload images and select featured images.
+- Local draft autosave in the article creation form.
+- Dashboard with recent and most-read articles.
 
-### Comunidad
+### Community
 
-- Reacciones a artículos, contador de lecturas y guardado por usuario autenticado.
-- Comentarios asociados a usuario y artículo. Los comentarios nuevos quedan pendientes y no aparecen en la vista pública hasta que sean aprobados.
+- Article reactions, view counts, and authenticated per-user bookmarks.
+- Comments linked to their author and article. New comments are pending by default and are hidden from public listings until approved.
 
-## Stack tecnológico
+## Tech stack
 
-| Área | Tecnologías |
+| Area | Technologies |
 | --- | --- |
-| Frontend | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router, TanStack Query y Tiptap |
-| Backend | Node.js 22, NestJS 12, TypeORM y PostgreSQL 16 |
-| Rate limiting | Redis 7 y `@nestjs/throttler` |
-| Proxy / producción | Nginx y Docker Compose |
-| Paquetes | pnpm 12.4.2 |
+| Frontend | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router, TanStack Query, and Tiptap |
+| Backend | Node.js 22, NestJS 12, TypeORM, and PostgreSQL 16 |
+| Rate limiting | Redis 7 and `@nestjs/throttler` |
+| Proxy / production | Nginx and Docker Compose |
+| Package manager | pnpm 12.4.2 |
 
-Las versiones instaladas se fijan en `frontend/pnpm-lock.yaml` y `backend/pnpm-lock.yaml`.
+Resolved dependency versions are recorded in `frontend/pnpm-lock.yaml` and `backend/pnpm-lock.yaml`.
 
-## Arquitectura
+## Architecture
 
-El backend organiza el dominio en capas:
+The backend is organized into layers:
 
-- `backend/src/domain`: entidades, excepciones y contratos de repositorio.
-- `backend/src/application`: casos de uso y DTOs.
-- `backend/src/infrastructure`: controladores Nest, persistencia TypeORM, autenticación y servicios externos.
+- `backend/src/domain`: entities, exceptions, and repository contracts.
+- `backend/src/application`: use cases and DTOs.
+- `backend/src/infrastructure`: Nest controllers, TypeORM persistence, authentication, and external services.
 
-El frontend usa páginas, loaders, servicios de API, componentes compartidos y React Query. La arquitectura actual separa lecturas y escrituras mediante casos de uso, pero **no implementa CQRS completo ni modelos de lectura independientes**.
+The frontend uses page modules, loaders, API services, shared components, and React Query. Reads and writes are separated through use cases, but the project does **not** implement full CQRS with independent read models.
 
-## Requisitos
+## Requirements
 
-- Docker y Docker Compose para levantar el entorno completo.
-- Para desarrollo local: Node.js 22 y pnpm 12.4.2.
-- Para ejecutar los E2E: Chromium instalado por Playwright.
+- Docker and Docker Compose for the full stack.
+- For local development: Node.js 22 and pnpm 12.4.2.
+- Chromium installed through Playwright to run frontend E2E tests.
 
-## Instalación con Docker
+## Docker setup
 
-1. Copiar la plantilla de entorno:
+1. Copy the environment template:
 
    ```sh
    cp .env.example .env
    ```
 
-2. Ajustar en `.env` los valores de PostgreSQL, JWT y el puerto si corresponde. No reutilizar las credenciales de ejemplo en un despliegue real.
+2. Update PostgreSQL, JWT, and port values in `.env` as needed. Do not use example credentials in a real deployment.
 
-3. Arrancar en modo desarrollo:
+3. Start the development stack:
 
    ```sh
    docker compose -f compose.yml -f compose.dev.yml up -d --build
    ```
 
-   Vite ofrece HMR y los servicios de PostgreSQL y Redis quedan dentro de la red Docker. Abrir `http://localhost:${NGINX_PORT}`; por defecto, `NGINX_PORT=8080`.
+   Vite HMR is enabled. PostgreSQL and Redis run on the internal Docker network. Open `http://localhost:${NGINX_PORT}`; the default is `NGINX_PORT=8080`.
 
-4. Arrancar el perfil de producción local:
+4. Start the local production stack:
 
    ```sh
    docker compose up -d --build
    ```
 
-   El frontend se compila y sirve como estático. El backend ejecuta las migraciones pendientes antes de iniciar Nest. Nginx expone el puerto configurado en `NGINX_PORT`.
+   The frontend is built and served as static assets. The backend applies pending migrations before starting Nest. Nginx publishes the port configured by `NGINX_PORT`.
 
-Comandos útiles del entorno de desarrollo:
+Useful development commands:
 
 ```sh
 make help
@@ -110,88 +110,88 @@ make logs-backend
 make logs-frontend
 ```
 
-## Configuración
+## Configuration
 
-La plantilla completa está en `.env.example`. Variables principales:
+The complete template is `.env.example`. Main variables:
 
-| Variable | Uso |
+| Variable | Purpose |
 | --- | --- |
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Inicialización de PostgreSQL |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexión del backend a PostgreSQL |
-| `JWT_SECRET` | Firma de sesiones web; debe tener al menos 32 bytes |
-| `API_CLIENT_JWT_SECRET` | Clave independiente opcional para tokens de integración. Si se omite, se deriva de `JWT_SECRET` con una etiqueta criptográfica separada |
-| `JWT_EXPIRES_IN_SECONDS` | Vida del token de acceso web |
-| `JWT_REFRESH_TTL_MINUTES` | Vida máxima del refresh token |
-| `REDIS_URL` | Redis para contadores de rate limiting; Compose usa `redis://redis:6379` |
-| `FRONTEND_URL` | Origen frontend permitido por CORS y verificación CSRF |
-| `NGINX_PORT` | Puerto HTTP publicado por Nginx |
-| `VITE_BACKEND_URL`, `VITE_PUBLIC_API_URL` | Configuración de API/proxy de Vite |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | PostgreSQL initialization |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Backend PostgreSQL connection |
+| `JWT_SECRET` | Web session signing key; must be at least 32 bytes |
+| `API_CLIENT_JWT_SECRET` | Optional separate signing key for integration tokens. If omitted, it is cryptographically derived from `JWT_SECRET` using a separate context label |
+| `JWT_EXPIRES_IN_SECONDS` | Web access-token lifetime |
+| `JWT_REFRESH_TTL_MINUTES` | Refresh-token lifetime |
+| `REDIS_URL` | Shared Redis rate-limit storage; Compose defaults to `redis://redis:6379` |
+| `FRONTEND_URL` | Allowed frontend origin for CORS and CSRF checks |
+| `NGINX_PORT` | Published HTTP port |
+| `VITE_BACKEND_URL`, `VITE_PUBLIC_API_URL` | Vite API/proxy configuration |
 
-El backend falla al iniciar si falta `JWT_SECRET` o su longitud es inferior a 32 bytes.
+The backend exits at startup if `JWT_SECRET` is missing or shorter than 32 bytes.
 
-## Desarrollo local sin Docker
+## Local development without Docker
 
-El backend requiere PostgreSQL y Redis accesibles. Desde cada directorio:
+The backend requires reachable PostgreSQL and Redis services. In separate terminals:
 
 ```sh
-# backend
+# Backend
 cd backend
 pnpm install
 pnpm dev
 ```
 
 ```sh
-# frontend, en otra terminal
+# Frontend
 cd frontend
 pnpm install
 pnpm dev
 ```
 
-Configurar `backend/.env` con `DB_*`, `JWT_SECRET`, `FRONTEND_URL` y `REDIS_URL`. Para Vite, configurar `VITE_BACKEND_URL` según dónde se ejecute el backend.
+Configure `backend/.env` with `DB_*`, `JWT_SECRET`, `FRONTEND_URL`, and `REDIS_URL`. Set `VITE_BACKEND_URL` to match the backend address used by Vite.
 
 ## API
 
-Todas las rutas están versionadas bajo `/api/v1`.
+All API routes are versioned under `/api/v1`.
 
-### API interna
+### Internal API
 
-- Sesión: `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/auth/me`.
-- Administración: `/api/v1/posts`, `/api/v1/users`, `/api/v1/categories`, `/api/v1/tags` y recursos de configuración.
-- Blog público: `/api/v1/public/posts`, `/api/v1/public/categories`, `/api/v1/public/tags`.
-- Interacción: comentarios, reacciones, marcadores y lecturas bajo `/api/v1/public/posts/:slug/...`.
+- Session: `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`, `/api/v1/auth/me`.
+- Administration: `/api/v1/posts`, `/api/v1/users`, `/api/v1/categories`, `/api/v1/tags`, and settings resources.
+- Public blog: `/api/v1/public/posts`, `/api/v1/public/categories`, `/api/v1/public/tags`.
+- Engagement: comments, reactions, bookmarks, and view counts under `/api/v1/public/posts/:slug/...`.
 
-La sesión del navegador usa cookies `HttpOnly`; los tokens no se devuelven en el JSON de login ni se guardan en `localStorage`.
+Browser sessions use `HttpOnly` cookies. Tokens are not returned in the login JSON response or stored in `localStorage`.
 
-### Documentación OpenAPI
+### OpenAPI documentation
 
-Swagger está disponible en desarrollo bajo `/api/docs`. En producción queda desactivado, salvo habilitación explícita mediante `SWAGGER_ENABLED=true`.
+Swagger is available at `/api/docs` in development. It is disabled in production unless explicitly enabled with `SWAGGER_ENABLED=true`.
 
-## Clientes API externos
+## External API clients
 
-La pestaña **Usuarios → Clientes API** permite crear y revocar clientes. El secreto se muestra una sola vez; en base de datos solo se guarda su hash. El cliente intercambia sus credenciales por un token `client_credentials` de 15 minutos.
+Administrators can create and revoke clients in **Users → API clients**. A client secret is shown only once and stored as a hash. Clients exchange credentials for a 15-minute `client_credentials` Bearer token.
 
-Scopes disponibles:
+Available scopes:
 
 - `posts:read`
 - `categories:read`
 - `tags:read`
 
-Los recursos protegidos son `/api/v1/integrations/posts`, `/categories` y `/tags`. Ejemplos completos con `curl` están en [`backend/API_CLIENTS.md`](backend/API_CLIENTS.md).
+Protected resources are `/api/v1/integrations/posts`, `/categories`, and `/tags`. See [`backend/API_CLIENTS.md`](backend/API_CLIENTS.md) for complete `curl` examples.
 
-## Seguridad
+## Security
 
-- Cookies de sesión `HttpOnly`, `SameSite=Lax` y `Secure` en producción.
-- Verificación de `Origin`/`Referer` para operaciones mutables con cookies, incluido login CSRF.
-- Refresh tokens aleatorios, persistidos hasheados, rotados atómicamente y con detección de reutilización.
-- Gestión de roles en la API interna; clientes externos tienen JWT separado por firma derivada/override, `issuer`, `audience`, expiración y scopes explícitos.
-- Rate limiting compartido por Redis; Nginx reenvía la IP y Express confía solo en el salto proxy configurado.
-- Errores 500 se responden de forma genérica, sin filtrar mensajes internos.
-- Avatares e imágenes subidas tienen límite de tamaño y validación de firma.
-- Clientes externos antiguos con wildcard `*` se revocan mediante migración; los clientes nuevos solo admiten scopes explícitos.
+- Web session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production.
+- Mutating cookie-authenticated requests, including login, validate `Origin`/`Referer` to mitigate CSRF.
+- Refresh tokens are random, stored hashed, rotated atomically, and protected against reuse.
+- Internal APIs use role checks. External clients use a separate signing key/context, `issuer`, `audience`, short token lifetime, and explicit scopes.
+- Rate limits use shared Redis storage. Nginx forwards client IP information and Express trusts only the configured proxy hop.
+- Internal error details are not exposed in HTTP 500 responses.
+- Avatar and image uploads have size limits and signature validation.
+- Existing wildcard-scoped API clients are revoked by migration; newly created clients must have explicit scopes.
 
-Los límites de rate limiting predeterminados son 100 solicitudes por minuto; login limita a 5 por minuto, emisión de tokens a 10 por minuto, uploads a 20 por hora e integraciones a 120 por minuto.
+Default rate limits are 100 requests per minute; login is limited to 5 per minute, token issuance to 10 per minute, uploads to 20 per hour, and integration resources to 120 per minute.
 
-## Pruebas y calidad
+## Testing and code quality
 
 ### Backend
 
@@ -202,9 +202,9 @@ pnpm lint
 pnpm test
 ```
 
-Hay pruebas para programación de artículos, login/cookies, OAuth de clientes externos, scopes, CSRF y refresh tokens. La prueba del rate limiter Redis se omite si no se define `REDIS_TEST_URL`.
+Tests cover scheduled publishing, login cookies, OAuth client credentials, scopes, CSRF, refresh-token rotation, and rate limiting. The Redis test is skipped unless `REDIS_TEST_URL` is set.
 
-En Docker Compose de desarrollo, ejecuta la suite completa incluyendo la prueba contra Redis:
+Run the full backend suite against Redis in the Docker development stack:
 
 ```sh
 docker compose -f compose.yml -f compose.dev.yml exec \
@@ -222,42 +222,43 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Los E2E de Playwright usan fixtures de API y no necesitan la base de datos ni credenciales. Cubren búsqueda, vistas, paginación y detalle del blog. Instrucciones adicionales: [`frontend/E2E.md`](frontend/E2E.md).
+Playwright E2E tests use API fixtures, so they do not require database content or real credentials. They cover search, view modes, pagination, and article details. See [`frontend/E2E.md`](frontend/E2E.md) for more information.
 
-### Auditoría de dependencias
-
-```sh
-cd backend && pnpm audit --prod
-cd ../frontend && pnpm audit --prod
-```
-
-## Migraciones
-
-Migraciones TypeORM en `backend/src/infrastructure/database/migrations/`.
-
-- En producción, el entrypoint del contenedor aplica migraciones pendientes antes de iniciar la API.
-- En desarrollo, TypeORM tiene `synchronize` habilitado; el comando manual sigue disponible con `make migration-run`.
-
-Para generar una migración en desarrollo:
+### Dependency audits
 
 ```sh
-make migration-generate NAME=NombreDescriptivo
+(cd backend && pnpm audit --prod)
+(cd frontend && pnpm audit --prod)
 ```
 
-## Estructura del repositorio
+## Database migrations
+
+TypeORM migrations are in `backend/src/infrastructure/database/migrations/`.
+
+- In production, the backend container runs pending migrations before starting the API.
+- In development, TypeORM synchronization is enabled; manual migration commands are also available through `make migration-run`.
+
+Generate a migration in development with:
+
+```sh
+make migration-generate NAME=DescriptiveName
+```
+
+## Repository structure
 
 ```text
-backend/          API NestJS, dominio, casos de uso, persistencia y migraciones
-frontend/         Aplicación React, blog, administración y E2E Playwright
-infrastructure/   Dockerfiles y configuración Nginx
-compose.yml       Stack de producción local
-compose.dev.yml   Overrides para Vite/Nest en desarrollo
-Makefile          Atajos para Compose, logs y migraciones
+backend/          NestJS API, domain, use cases, persistence, and migrations
+frontend/         React app, blog, administration, and Playwright E2E tests
+infrastructure/   Dockerfiles and Nginx configuration
+compose.yml       Local production stack
+compose.dev.yml   Vite/Nest development overrides
+Makefile          Compose, log, and migration shortcuts
+docs/             Project artwork and documentation assets
 ```
 
-## Limitaciones conocidas
+## Known limitations
 
-- La moderación guarda comentarios nuevos como pendientes, pero aún falta una interfaz administrativa completa para aprobarlos/rechazarlos.
-- Los marcadores se pueden alternar en el artículo; aún no hay una página de usuario con la lista de artículos guardados.
-- El rate limiter comparte contadores vía Redis, pero la topología Redis incluida en Compose es standalone; para alta disponibilidad se debería usar Redis administrado o una topología HA.
-- Los E2E actuales cubren los recorridos públicos principales; aún no automatizan todo el panel administrativo.
+- New comments are held pending approval, but a full admin interface to approve/reject them is not yet available.
+- Article bookmarks can be toggled, but there is no user page listing saved articles yet.
+- Compose uses standalone Redis. Production deployments requiring high availability should use a managed Redis service or HA topology.
+- Current E2E tests cover the main public blog flows; the full admin panel is not yet covered end-to-end.
