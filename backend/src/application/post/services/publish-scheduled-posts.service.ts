@@ -1,12 +1,23 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { IPostRepository, POST_REPOSITORY } from '../../../domain/post/repositories/post.repository.interface';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
+import { PublishScheduledPostsCommand } from '../commands/post.commands';
 
 @Injectable()
-export class PublishScheduledPostsService implements OnModuleInit {
-  constructor(@Inject(POST_REPOSITORY) private readonly postRepository: IPostRepository) {}
+export class PublishScheduledPostsService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(PublishScheduledPostsService.name);
 
-  onModuleInit() {
-    void this.postRepository.publishScheduled();
-    setInterval(() => void this.postRepository.publishScheduled(), 60_000).unref();
+  constructor(private readonly commandBus: CommandBus) {}
+
+  onApplicationBootstrap() {
+    void this.publishScheduledPosts();
+    setInterval(() => void this.publishScheduledPosts(), 60_000).unref();
+  }
+
+  private async publishScheduledPosts() {
+    try {
+      await this.commandBus.execute(new PublishScheduledPostsCommand());
+    } catch (error) {
+      this.logger.error('Failed to publish scheduled posts', error);
+    }
   }
 }

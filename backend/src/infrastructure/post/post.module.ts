@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CqrsModule } from '@nestjs/cqrs';
 import { PostOrmEntity } from '../database/entities/post.orm.entity';
 import { CategoryOrmEntity } from '../database/entities/category.orm.entity';
 import { TagOrmEntity } from '../database/entities/tag.orm.entity';
@@ -7,31 +8,46 @@ import { POST_REPOSITORY } from '../../domain/post/repositories/post.repository.
 import { PostRepository } from './post.repository';
 import { PostController } from './post.controller';
 import { PublicPostController, RssFeedController, SitemapController } from './public-post.controller';
-import { CreatePostUseCase } from '../../application/post/use-cases/create-post.use-case';
-import { UpdatePostUseCase } from '../../application/post/use-cases/update-post.use-case';
-import { DeletePostUseCase } from '../../application/post/use-cases/delete-post.use-case';
-import { GetPostListUseCase } from '../../application/post/use-cases/get-post-list.use-case';
-import { GetPostByIdUseCase } from '../../application/post/use-cases/get-post-by-id.use-case';
-import { GetPostBySlugUseCase } from '../../application/post/use-cases/get-post-by-slug.use-case';
 import { PublishScheduledPostsService } from '../../application/post/services/publish-scheduled-posts.service';
+import {
+  CreatePostHandler,
+  DeletePostHandler,
+  IncrementPostViewsHandler,
+  PublishScheduledPostsHandler,
+  UpdatePostHandler,
+} from '../../application/post/handlers/post-command.handlers';
+import {
+  GetPostByIdHandler,
+  GetPostBySlugHandler,
+  GetPostListHandler,
+  GetPostStatsHandler,
+  GetRelatedPostsHandler,
+} from '../../application/post/handlers/post-query.handlers';
 import { PostCommentOrmEntity } from '../database/entities/post-comment.orm.entity';
 import { PostReactionOrmEntity } from '../database/entities/post-reaction.orm.entity';
 import { PostBookmarkOrmEntity } from '../database/entities/post-bookmark.orm.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostOrmEntity, CategoryOrmEntity, TagOrmEntity, PostCommentOrmEntity, PostReactionOrmEntity, PostBookmarkOrmEntity])],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([PostOrmEntity, CategoryOrmEntity, TagOrmEntity, PostCommentOrmEntity, PostReactionOrmEntity, PostBookmarkOrmEntity]),
+  ],
   controllers: [PostController, PublicPostController, RssFeedController, SitemapController],
   providers: [
     PostRepository,
     { provide: POST_REPOSITORY, useClass: PostRepository },
-    CreatePostUseCase,
-    UpdatePostUseCase,
-    DeletePostUseCase,
-    GetPostListUseCase,
-    GetPostByIdUseCase,
-    GetPostBySlugUseCase,
+    CreatePostHandler,
+    UpdatePostHandler,
+    DeletePostHandler,
+    IncrementPostViewsHandler,
+    PublishScheduledPostsHandler,
+    GetPostListHandler,
+    GetPostByIdHandler,
+    GetPostBySlugHandler,
+    GetRelatedPostsHandler,
+    GetPostStatsHandler,
     PublishScheduledPostsService,
   ],
-  exports: [POST_REPOSITORY, GetPostListUseCase, GetPostBySlugUseCase],
+  exports: [POST_REPOSITORY],
 })
 export class PostModule {}

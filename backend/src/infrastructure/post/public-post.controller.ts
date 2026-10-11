@@ -1,12 +1,12 @@
-import { Body, BadRequestException, Controller, Get, Post, Param, Query, Inject, Res, Header, UseGuards } from '@nestjs/common';
+import { Body, BadRequestException, Controller, Get, Post, Param, Query, Res, Header, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GetPostListUseCase } from '../../application/post/use-cases/get-post-list.use-case';
-import { GetPostBySlugUseCase } from '../../application/post/use-cases/get-post-by-slug.use-case';
+import { IncrementPostViewsCommand } from '../../application/post/commands/post.commands';
+import { GetPostBySlugQuery, GetPostListQuery, GetRelatedPostsQuery } from '../../application/post/queries/post.queries';
 import { PostFiltersDto } from '../../application/post/dto/post-filters.dto';
 import { PostResource } from './resources/post.resource';
-import { IPostRepository, POST_REPOSITORY } from '../../domain/post/repositories/post.repository.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../domain/user/entities/user.entity';
@@ -19,9 +19,8 @@ import { normalizeAvatarUrl } from '../user/avatar-url';
 @Controller('api/v1/public/posts')
 export class PublicPostController {
   constructor(
-    private readonly getPostList: GetPostListUseCase,
-    private readonly getPostBySlug: GetPostBySlugUseCase,
-    @Inject(POST_REPOSITORY) private readonly postRepo: IPostRepository,
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
     @InjectRepository(PostCommentOrmEntity) private readonly commentRepo: Repository<PostCommentOrmEntity>,
     @InjectRepository(PostReactionOrmEntity) private readonly reactionRepo: Repository<PostReactionOrmEntity>,
     @InjectRepository(PostBookmarkOrmEntity) private readonly bookmarkRepo: Repository<PostBookmarkOrmEntity>,
@@ -30,7 +29,7 @@ export class PublicPostController {
   @Get()
   @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=60')
   async index(@Query() filters: PostFiltersDto) {
-    const result = await this.getPostList.execute({ ...filters, status: 'published' });
+    const result = await this.queryBus.execute(new GetPostListQuery({ ...filters, status: 'published' }));
     return {
       data: PostResource.collection(result.data),
       meta: {
@@ -45,36 +44,34 @@ export class PublicPostController {
   @Get(':slug/related')
   @Header('Cache-Control', 'public, max-age=300')
   async related(@Param('slug') slug: string) {
-    const post = await this.getPostBySlug.execute(slug);
-    const categoryIds = (post.categories ?? []).map((c) => c.id);
-    const related = await this.postRepo.findRelated(post.id, categoryIds, 3);
+    const related = await this.queryBus.execute(new GetRelatedPostsQuery(slug, 3));
     return { data: PostResource.collection(related) };
   }
 
   @Get(':slug')
   @Header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300')
   async show(@Param('slug') slug: string) {
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     return { data: PostResource.from(post) };
   }
 
   @Post(':slug/view')
   async recordView(@Param('slug') slug: string) {
-    const post = await this.getPostBySlug.execute(slug);
-    await this.postRepo.incrementViews(post.id);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
+    await this.commandBus.execute(new IncrementPostViewsCommand(post.id));
     return { success: true };
   }
 
   @Get(':slug/comments')
   async comments(@Param('slug') slug: string) {
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     const comments = await this.commentRepo.find({ where: { postId: post.id, status: 'approved' }, relations: { user: { settings: true } }, order: { createdAt: 'ASC' } });
     return { data: comments.map((comment) => ({ id: comment.id, content: comment.content, createdAt: comment.createdAt.toISOString(), user: { id: comment.user.id, name: comment.user.name, avatar: normalizeAvatarUrl(comment.user.settings?.avatar) } })) };
   }
 
   @Get(':slug/engagement')
   async engagement(@Param('slug') slug: string) {
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     const reactions = await this.reactionRepo.createQueryBuilder('reaction').select('reaction.type', 'type').addSelect('COUNT(*)', 'count').where('reaction.post_id = :postId', { postId: post.id }).groupBy('reaction.type').getRawMany<{ type: ReactionType; count: string }>();
     const reactionCounts = { heart: 0, unicorn: 0, lightbulb: 0 };
     reactions.forEach((reaction) => { reactionCounts[reaction.type] = Number(reaction.count); });
@@ -87,7 +84,7 @@ export class PublicPostController {
   async createComment(@Param('slug') slug: string, @Body() body: { content?: string }, @CurrentUser() user: UserEntity) {
     const content = body.content?.trim();
     if (!content || content.length > 2000) throw new BadRequestException('Comment must be between 1 and 2000 characters');
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     const comment = await this.commentRepo.save(this.commentRepo.create({ postId: post.id, userId: user.id, content, status: 'pending' }));
     return { data: { id: comment.id, content: comment.content, status: comment.status, createdAt: comment.createdAt.toISOString(), user: { id: user.id, name: user.name, avatar: normalizeAvatarUrl(user.settings?.avatar) } } };
   }
@@ -96,7 +93,7 @@ export class PublicPostController {
   @UseGuards(JwtAuthGuard)
   async toggleReaction(@Param('slug') slug: string, @Body() body: { type?: ReactionType }, @CurrentUser() user: UserEntity) {
     if (!body.type || !['heart', 'unicorn', 'lightbulb'].includes(body.type)) throw new BadRequestException('Invalid reaction type');
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     const existing = await this.reactionRepo.findOneBy({ postId: post.id, userId: user.id, type: body.type });
     if (existing) await this.reactionRepo.remove(existing);
     else await this.reactionRepo.save(this.reactionRepo.create({ postId: post.id, userId: user.id, type: body.type }));
@@ -106,7 +103,7 @@ export class PublicPostController {
   @Post(':slug/bookmark')
   @UseGuards(JwtAuthGuard)
   async toggleBookmark(@Param('slug') slug: string, @CurrentUser() user: UserEntity) {
-    const post = await this.getPostBySlug.execute(slug);
+    const post = await this.queryBus.execute(new GetPostBySlugQuery(slug));
     const existing = await this.bookmarkRepo.findOneBy({ postId: post.id, userId: user.id });
     if (existing) { await this.bookmarkRepo.remove(existing); return { data: { bookmarked: false } }; }
     await this.bookmarkRepo.save(this.bookmarkRepo.create({ postId: post.id, userId: user.id }));
@@ -116,11 +113,11 @@ export class PublicPostController {
 
 @Controller()
 export class RssFeedController {
-  constructor(private readonly getPostList: GetPostListUseCase) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   @Get('feed.xml')
   async rss(@Res() res: Response) {
-    const result = await this.getPostList.execute({ status: 'published', perPage: 20, page: 1 });
+    const result = await this.queryBus.execute(new GetPostListQuery({ status: 'published', perPage: 20, page: 1 }));
     const siteUrl = process.env.FRONTEND_URL ?? 'http://localhost:8081';
     const appName = process.env.VITE_APP_NAME ?? 'Blog';
 
@@ -166,14 +163,14 @@ export class RssFeedController {
 
 @Controller()
 export class SitemapController {
-  constructor(private readonly getPostList: GetPostListUseCase) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   @Get('sitemap.xml')
   async sitemap(@Res() res: Response) {
-    const firstPage = await this.getPostList.execute({ status: 'published', perPage: 100, page: 1 });
+    const firstPage = await this.queryBus.execute(new GetPostListQuery({ status: 'published', perPage: 100, page: 1 }));
     const pages = await Promise.all(
       Array.from({ length: Math.max(firstPage.lastPage - 1, 0) }, (_, index) =>
-        this.getPostList.execute({ status: 'published', perPage: 100, page: index + 2 }),
+        this.queryBus.execute(new GetPostListQuery({ status: 'published', perPage: 100, page: index + 2 })),
       ),
     );
     const posts = [firstPage, ...pages].flatMap((result) => result.data);
