@@ -4,6 +4,10 @@ allowBuilds:
 onlyBuiltDependencies:
   - '@nestjs/core'
 
+overrides:
+  body-parser: '>=2.4.0'
+  multer: '>=2.5.0'
+
 # @nestjs/throttler 6.5.0 aún declara peer @nestjs/core/common ^11; funciona con 12.
 peerDependencyRules:
   allowedVersions:

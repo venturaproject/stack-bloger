@@ -51,7 +51,7 @@ Bloger is a content management system and public blog built with React, NestJS, 
 | Area | Technologies |
 | --- | --- |
 | Frontend | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router, TanStack Query, and Tiptap |
-| Backend | Node.js 22, NestJS 12, TypeORM, and PostgreSQL 16 |
+| Backend | Node.js 22, NestJS 12, TypeORM, and PostgreSQL 18 |
 | Rate limiting | Redis 7 and `@nestjs/throttler` |
 | Proxy / production | Nginx and Docker Compose |
 | Package manager | pnpm 12.4.2 |
@@ -66,7 +66,11 @@ The backend is organized into layers:
 - `backend/src/application`: use cases and DTOs.
 - `backend/src/infrastructure`: Nest controllers, TypeORM persistence, authentication, and external services.
 
-The frontend uses page modules, loaders, API services, shared components, and React Query. Reads and writes are separated through use cases, but the project does **not** implement full CQRS with independent read models.
+Post operations use NestJS CQRS commands, queries, and handlers. CQRS is not yet applied to every context and does not use separate read models or databases. The domain is kept independent of NestJS and TypeORM; Infrastructure maps ORM entities to domain models. Dependency-cruiser checks the backend's layer boundaries.
+
+See [backend architecture](docs/ARCHITECTURE.md) and [SOLID, CQRS, and dependency audits](docs/ARCHITECTURE_SOLID_CQRS.md) for layer rules, current migration boundaries, and verification commands.
+
+The frontend uses page modules, loaders, API services, shared components, and React Query.
 
 ## Requirements
 
@@ -199,10 +203,11 @@ Default rate limits are 100 requests per minute; login is limited to 5 per minut
 cd backend
 pnpm tsc
 pnpm lint
+pnpm architecture:check
 pnpm test
 ```
 
-Tests cover scheduled publishing, login cookies, OAuth client credentials, scopes, CSRF, refresh-token rotation, and rate limiting. The Redis test is skipped unless `REDIS_TEST_URL` is set.
+The architecture check uses dependency-cruiser to prevent domain dependencies on application/infrastructure or third-party frameworks, and application dependencies on infrastructure. Tests cover scheduled publishing, login cookies, OAuth client credentials, scopes, CSRF, refresh-token rotation, and rate limiting. The Redis test is skipped unless `REDIS_TEST_URL` is set.
 
 Run the full backend suite against Redis in the Docker development stack:
 

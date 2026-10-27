@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { RefreshTokenUseCase } from './refresh-token.use-case';
 import { IUserRefreshTokenRepository } from '../../../domain/user/repositories/user-refresh-token.repository.interface';
-import { UserRefreshTokenEntity } from '../../../infrastructure/database/entities/user-refresh-token.entity';
+import { UserRefreshTokenEntity } from '../../../domain/user/entities/user-refresh-token.entity';
 
 function setup(rotation: 'rotated' | 'reused' | 'invalid') {
-  const token = { id: 31, userId: 7, user: { id: 7 } } as UserRefreshTokenEntity;
+  const token = { id: 31, userId: 7, user: { id: 7 }, usedAt: null, isUsed: () => false } as UserRefreshTokenEntity;
   let rotatedWith: { id: number; tokenHash: string; expiresAt: Date } | null = null;
   let signedSubject: number | undefined;
   const repository: IUserRefreshTokenRepository = {

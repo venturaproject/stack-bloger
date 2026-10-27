@@ -1,4 +1,4 @@
-import { UserRefreshTokenEntity } from '../../../infrastructure/database/entities/user-refresh-token.entity';
+import { UserRefreshTokenEntity } from '../entities/user-refresh-token.entity';
 
 export const USER_REFRESH_TOKEN_REPOSITORY = Symbol('USER_REFRESH_TOKEN_REPOSITORY');
 
