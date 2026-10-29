@@ -4,27 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ExternalLink, MoreHorizontal, Pencil, Trash2, ImageIcon } from 'lucide-react'
+import type { Post } from '@/features/posts/types'
+
+export type { Post } from '@/features/posts/types'
 
 function imgSrc(url: string) {
   if (url.startsWith('http')) return url
   if (url.startsWith('/uploads/')) return `/api${url}`
   return url
-}
-
-export interface Post {
-  id: number
-  title: string
-  slug: string
-  content: string
-  excerpt: string | null
-  featuredImage: string | null
-  status: 'draft' | 'scheduled' | 'published' | 'archived'
-  publishedAt: string | null
-  author: { id: number; name: string } | null
-  categories: Array<{ id: number; name: string; slug: string }>
-  tags: Array<{ id: number; name: string; slug: string }>
-  createdAt: string
-  updatedAt: string
 }
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {

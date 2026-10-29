@@ -14,10 +14,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ChevronLeft, ExternalLink, Save } from 'lucide-react'
 import { MinimalTiptapEditor } from '@/components/ui/minimal-tiptap'
 import { FeaturedImageUpload } from '@/components/ui/featured-image-upload'
-import { postsApi } from '@/services/posts-api'
+import { postsApi } from '@/features/posts/infrastructure/posts-api'
 import { pathFor } from '@/lib/app-routes'
 import { getApiErrorMessage } from '@/lib/api-error'
-import { axios } from '@/lib/axios'
 
 interface Category { id: number; name: string; slug: string }
 interface Tag { id: number; name: string; slug: string }
@@ -28,12 +27,8 @@ interface CreatePostPageProps {
 }
 
 async function uploadImage(file: File): Promise<string> {
-  const fd = new FormData()
-  fd.append('file', file)
-  const res = await axios.post('/api/v1/uploads/image', fd, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
-  return res.data.url
+  const uploadedImage = await postsApi.uploadImage(file)
+  return uploadedImage.url
 }
 
 export default function CreatePost({ categories = [], tags = [] }: CreatePostPageProps) {

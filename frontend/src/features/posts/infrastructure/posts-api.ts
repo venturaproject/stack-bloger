@@ -12,6 +12,10 @@ export interface PostPayload {
   tagIds?: number[]
 }
 
+export interface UploadedImage {
+  url: string
+}
+
 export const postsApi = {
   async create(data: PostPayload) {
     const res = await axios.post('/api/v1/posts', data)
@@ -25,5 +29,14 @@ export const postsApi = {
 
   async delete(id: number | string): Promise<void> {
     await axios.delete(`/api/v1/posts/${id}`)
+  },
+
+  async uploadImage(file: File): Promise<UploadedImage> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const { data } = await axios.post<UploadedImage>('/api/v1/uploads/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data
   },
 }

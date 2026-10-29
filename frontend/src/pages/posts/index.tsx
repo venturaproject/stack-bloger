@@ -21,8 +21,9 @@ import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { useTableFilters } from '@/hooks/use-table-filters'
 import { useBulkSelection } from '@/hooks/use-bulk-selection'
 import { useColumnReorder } from '@/hooks/use-column-reorder'
-import { buildPostColumns, postColumnLabels, Post } from './columns'
-import { postsApi } from '@/services/posts-api'
+import { buildPostColumns, postColumnLabels } from './columns'
+import type { Post } from '@/features/posts/types'
+import { postsApi } from '@/features/posts/infrastructure/posts-api'
 import { pathFor } from '@/lib/app-routes'
 
 interface PostStats {

@@ -70,7 +70,7 @@ Post operations use NestJS CQRS commands, queries, and handlers. CQRS is not yet
 
 See [backend architecture](docs/ARCHITECTURE.md) and [SOLID, CQRS, and dependency audits](docs/ARCHITECTURE_SOLID_CQRS.md) for layer rules, current migration boundaries, and verification commands.
 
-The frontend uses page modules, loaders, API services, shared components, and React Query.
+The frontend currently uses page modules, loaders, concrete API services, shared components, and React Query. Its conventions and current Clean Architecture/DDD boundaries are documented in [frontend architecture](docs/frontend-architecture.md) and [frontend conventions](docs/frontend-conventions.md); the guides call out current coupling rather than presenting the target structure as already implemented. See the [documentation index](docs/README.md) for all guides.
 
 ## Requirements
 
